@@ -9,15 +9,15 @@ find_package(Boost COMPONENTS unit_test_framework REQUIRED)
 
 configure_file(version.h.in ${PROJECT_SOURCE_DIR}/version.h)
 
-add_executable(allocator ${PROJECT_SOURCE_DIR}/src/main.cpp)
-add_library(allocator_lib ${PROJECT_SOURCE_DIR}/libSrc/lib.cpp)
+add_executable(print_ip ${PROJECT_SOURCE_DIR}/src/main.cpp)
+add_library(printip_lib ${PROJECT_SOURCE_DIR}/libSrc/lib.cpp)
 add_executable(test_version ${PROJECT_SOURCE_DIR}/test_version.cpp)
 
-set_target_properties(allocator allocator_lib test_version PROPERTIES
-    CXX_STANDARD 14
+set_target_properties(print_ip printip_lib test_version PROPERTIES
+    CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
 )
-target_include_directories(allocator
+target_include_directories(print_ip
     PRIVATE "${CMAKE_BINARY_DIR}"
 )
 set_target_properties(test_version PROPERTIES
@@ -26,34 +26,34 @@ set_target_properties(test_version PROPERTIES
     INCLUDE_DIRECTORIES ${PROJECT_SOURCE_DIR}/libSrc
 )
 
-target_link_libraries(allocator PRIVATE
-    allocator_lib
+target_link_libraries(print_ip PRIVATE
+    printip_lib
 )
 
-target_include_directories(allocator PUBLIC
+target_include_directories(print_ip PUBLIC
     ${PROJECT_SOURCE_DIR}/libSrc
 )
 
 target_link_libraries(test_version
     ${Boost_LIBRARIES}
-    allocator_lib
+    printip_lib
 )
 
 if (MSVC)
-    target_compile_option(allocator PRIVATE
+    target_compile_option(print_ip PRIVATE
         /W4
     )
-    target_compile_options(alloacator_lib PRIVATE
+    target_compile_options(printip_lib PRIVATE
         /W4
     )
     target_compile_options(test_version PRIVATE
         /W4
     )
 else ()
-    target_compile_options(allocator PRIVATE
+    target_compile_options(print_ip PRIVATE
         -Wall -Wextra -pedantic 
     )
-    target_compile_options(allocator_lib PRIVATE
+    target_compile_options(printip_lib PRIVATE
         -Wall -Wextra -pedantic
     )
     target_compile_options(test_version PRIVATE
@@ -61,7 +61,7 @@ else ()
     )
 endif()
 
-install(TARGETS allocator RUNTIME DESTINATION bin)
+install(TARGETS print_ip RUNTIME DESTINATION bin)
 
 set(CPACK_GENERATOR DEB)
 set(CPACK_PACKAGE_VERSION_MAJOR "${PROJECT_VERSION_MAJOR}")
@@ -74,4 +74,4 @@ include(CPack)
 
 enable_testing()
 
-add_test(allocator_tests test_version)
+add_test(print_ip_tests test_version)

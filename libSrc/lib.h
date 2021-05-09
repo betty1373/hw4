@@ -1,183 +1,61 @@
 #pragma once
 #include <iostream>
-#include <map>
-#include <memory>
-
+#include <string>
+#include <vector>
+#include <type_traits>
+#include <algorithm>
+#include <list>
+#include <tuple>
+#include <utility>
 namespace libSrc 
 {
-    int version();
-    int fact(int V);
-
-    template<typename T,std::size_t lot>
-    struct logging_allocator {
-        using value_type = T;
-
-        using pointer = T*;
-        using const_pointer = const T*;
-        using reference = T&;
-        using const_reference = const T&;
-
-        template<typename U>
-        struct rebind {
-            using other = logging_allocator<U,lot>;
-        };
-
-        logging_allocator() = default;
-        ~logging_allocator()=default;
-
-        pointer allocate(std::size_t n) {    
-            if (bufCnt + n > lot) {
-                throw std::bad_alloc();
-            }
-     
-            if (!bufPtr) {
-                std::cout << __PRETTY_FUNCTION__ << "[n = " << n << "]" << std::endl;
-                bufPtr = reinterpret_cast<pointer>(malloc(lot * sizeof(T)));
-            }
-            
-            if (!bufPtr) {
-                throw std::bad_alloc();
-            }
-            pointer pp = bufPtr + bufCnt;
-            bufCnt += n;
-            return pp;
-        }
-        void deallocate(pointer p, std::size_t n) {
-            if (!p) {
-            return;
-            }
-            bufCnt -= n;
-            if (bufCnt != 0) {
-            return;
-            }
-            free(bufPtr);
-            std::cout << __PRETTY_FUNCTION__ << "[n = " << n << "]" << std::endl;
-            bufPtr = nullptr;
-        }
-
-        template<typename U, typename ...Args>
-        void construct(U *p, Args &&...args) {
-            std::cout << __PRETTY_FUNCTION__ << std::endl;
-            new(p) U(std::forward<Args>(args)...);
-        }
-
-        void destroy(pointer p) {
-            std::cout << __PRETTY_FUNCTION__ << std::endl;
-            p->~T();
-        }
-
-        private:
-        pointer bufPtr = nullptr;
-        size_t  bufCnt  = 0;
-    };
-
-    // custom container
     template<typename T>
-    struct Leaf
-    {
-        Leaf* next;
-        T data;
-        template<typename ...Args>
-        Leaf(Args &&...args): next(nullptr), data(std::forward<Args>(args)...){}
-    };
-    template <typename T>
-    struct ForwardListIterator
-    {
-        using value_type = T;
-        using pointer = T*;
-        using reference = T&;
-        using iterator_category=std::forward_iterator_tag;
-
-        using _this = ForwardListIterator<T>;
-        
-        Leaf<T>* _leaf; 
-
-        // constractors
-
-        ForwardListIterator() : _leaf(){}
-        ForwardListIterator(Leaf<T>* pLeaf) : _leaf(pLeaf) {}
-
-        reference operator*() const {
-            return _leaf->data;
+    std::enable_if_t<std::is_integral<T>::value> print_ip(const T& value) {
+        for (size_t sz=sizeof(T);sz>0;--sz) {
+            std::cout << ((value >>(8 * (sz-1))) & ((uint8_t) -1))
+            << (sz!=1 ? "." : "");
         }
+    }
 
-        pointer operator->() const {
-            return &(_leaf->data);
-        }
+    template<typename T>
+    struct is_string : std::false_type{};    
+    template<>
+    struct is_string<std::string>: std::true_type{};
+    template<typename T>
+    std::enable_if_t<is_string<T>::value> print_ip(const T& value) {
+        std::cout<< value;
+    }
 
-        _this& operator++(){
-            if (_leaf==nullptr) {
-                return *this;
-            }
-            else {
-                _leaf = _leaf->next;
-            }
-            return *this;
+    template<typename T>
+    struct is_vector_list : std::false_type{};
+    template<typename... Args>
+    struct is_vector_list<std::vector<Args...>> : std::true_type{};
+    template<typename... Args>
+    struct is_vector_list<std::list<Args...>> : std::true_type{};
+    template<typename T>
+    std::enable_if_t<is_vector_list<T>::value> print_ip(const T& value) {
+        for(const auto& it : value) {
+            std::cout << it 
+            << (&it!=&value.back() ? "." : "");
         }
-        bool operator ==(const _this& rhs) const{
-            return _leaf==rhs._leaf;
-        }
-        bool operator !=(const _this& rhs) const{
-            return _leaf!=rhs._leaf;
-        }
-    };
-    template<typename T,typename _A=std::allocator<T>>
-    class ForwardList {
-    public:
-        ForwardList(): head(nullptr), tail(nullptr),_alloc() {
-            std::cout<<"FL ...ctor"<<std::endl;
-        }
+    }
 
-        ~ForwardList(){
-            std::cout<<"FL ...dctor"<<std::endl;
-            std::cout<<"FL head before destruct"<<head<<std::endl;
-            auto current = head;
-            while(current!=nullptr){
-                auto remove = current;
-                current = current->next;
-                _alloc.destroy(remove);
-                _alloc.deallocate(remove,1);
-            }
-        }
- 
-        template <typename ...Args>
-        void push_back(Args &&...args) {
-            Leaf<T> *new_node = _alloc.allocate(1);
-            _alloc.construct(new_node, std::forward<Args>(args)...);
+    template<typename... Args>
+    struct all_same : std::false_type{};
+    template<typename T>
+    struct all_same <T>: std::true_type{};
+    template <typename T,typename... Args>
+    struct all_same<T,T,Args...> : all_same<T,Args...>{};
 
-            if (head == nullptr) {
-                head = new_node;
-                tail = new_node;
-            }
-            else {
-                tail->next = new_node;
-                tail = new_node;
-                tail->next = nullptr;
-            }
-            nums++;
-        }
+    template<typename T,size_t... N>
+    constexpr void print_tuple(const T& tup,std::index_sequence<N...>) {
+            (...,(std::cout<<(N==0?"":".")<<std::get<N>(tup)));
+    }
 
-        ForwardListIterator<T> cbegin() const noexcept {
-            return ForwardListIterator<T>(head);
-        }
+    template<typename... Args>
+    std::enable_if_t<all_same<Args...>::value> print_ip(const std::tuple<Args...>& value) {
+        print_tuple(value,std::make_index_sequence<sizeof...(Args)>());
+    }
 
-        ForwardListIterator<T> cend() noexcept {
-            return ForwardListIterator<T>();
-        }
-//optional
-        bool empty() const noexcept{
-            return (nums==0);
-        }
-        size_t size() noexcept{
-            return nums;
-        }
-    private:
-        Leaf<T>* head;
-        Leaf<T>* tail;
-
-        size_t nums=0;
-
-        using Allocator = typename _A::template rebind<Leaf<T>>::other;
-        Allocator _alloc;
-    };
+    int version();
 }
