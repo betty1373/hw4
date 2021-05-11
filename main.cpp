@@ -2,7 +2,7 @@
 using namespace printip;
 /// @file
 
-/// @brief  
+/// @brief Main function. Print Ip's from various types.
 /// @author btv <example@example.com>
 int main(int, char *[]) {
    print_ip(char{-1});
