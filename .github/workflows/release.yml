@@ -15,8 +15,8 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install doxygen doxygen-gui -y
       - run: cmake .
       - run: cmake --build .
-      - run: doxygen
       - run: cmake --build . --target package
+      - run: doxygen Doxyfile
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
