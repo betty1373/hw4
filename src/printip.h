@@ -9,7 +9,7 @@
 #include <utility>
 namespace printip
 {
- /// @file
+/// @file
 
 /// References:
 /// - https://en.cppreference.com/w/cpp/types/enable_if
