@@ -72,7 +72,9 @@ namespace printip
     struct all_same<T,T,Args...> : all_same<T,Args...>{};
  
 /// @brief
-/// Helper to print tuple elements divided by "."
+/// References:
+/// - https://en.cppreference.com/w/cpp/language/fold
+/// Helper to print tuple elements divided by "." by used fold expression
 /// Note: Dot "." after last octet shouldn't be printed
     template<typename T,size_t... N>
     constexpr void print_tuple(const T& tup,std::index_sequence<N...>) {
