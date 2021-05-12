@@ -19,7 +19,7 @@ namespace printip
 /// template< bool B, class T = void >
 /// using enable_if_t = typename enable_if<B,T>::type;
 
-/// @brief  Prints IP, represented as integral type
+/// @brief  Prints IP, represented as a integral type
 /// @tparam T - integral type (bool, char, short, uint, int, long, etc...)
 /// @param  value - IP address
 /// @author btv <example@example.com>
