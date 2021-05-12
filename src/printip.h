@@ -69,8 +69,7 @@ namespace printip
     template<typename T>
     struct all_same <T>: std::true_type{};
     template <typename T,typename... Args>
-    struct all_same<T,T,Args...> : all_same<T,Args...>{};
- 
+    struct all_same<T,T,Args...> : all_same<T,Args...>{}; 
 /// @brief
 /// References:
 /// - https://en.cppreference.com/w/cpp/language/fold
