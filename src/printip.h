@@ -19,10 +19,9 @@ namespace printip
 /// template< bool B, class T = void >
 /// using enable_if_t = typename enable_if<B,T>::type;
 
-
-/// @brief  Prints IP represented as integral type
+/// @brief  Prints IP, represented as integral type
 /// @tparam T - integral type (bool, char, short, uint, int, long, etc...)
-/// @param  ip - IP address
+/// @param  value - IP address
 /// @author btv <example@example.com>
     template<typename T>
     std::enable_if_t<std::is_integral<T>::value> print_ip(const T& value) {
@@ -36,9 +35,9 @@ namespace printip
     struct is_string : std::false_type{};    
     template<>
     struct is_string<std::string>: std::true_type{};
-/// @brief  Prints IP represented as std::string type
+/// @brief  Prints IP, represented as std::string type
 /// @tparam T - std::string type
-/// @param  ip - IP address
+/// @param  value - IP address
 /// @author btv <example@example.com>
     template<typename T>
     std::enable_if_t<is_string<T>::value> print_ip(const T& value) {
@@ -52,9 +51,9 @@ namespace printip
     template<typename... Args>
     struct is_vector_list<std::list<Args...>> : std::true_type{};
     template<typename T>
-/// @brief  Prints IP represented as std::vector or std::list
+/// @brief  Prints IP, represented as std::vector or std::list
 /// @tparam T - std::vector / std::list type
-/// @param  ip - IP address
+/// @param  value - IP address
 /// @author btv <example@example.com>
     std::enable_if_t<is_vector_list<T>::value> print_ip(const T& value) {
         for(const auto& it : value) {
@@ -62,21 +61,26 @@ namespace printip
             << (&it!=&value.back() ? "." : "");
         }
     }
-
+ 
+/// @brief
+/// Check, if arguments have the same type
     template<typename... Args>
     struct all_same : std::false_type{};
     template<typename T>
     struct all_same <T>: std::true_type{};
     template <typename T,typename... Args>
     struct all_same<T,T,Args...> : all_same<T,Args...>{};
-
+ 
+/// @brief
+/// Helper to print tuple elements divided by "."
+/// Note: Dot "." after last octet shouldn't be printed
     template<typename T,size_t... N>
     constexpr void print_tuple(const T& tup,std::index_sequence<N...>) {
             (...,(std::cout<<(N==0?"":".")<<std::get<N>(tup)));
     }
-/// @brief  Prints IP represented as std::tuple where all arguments have same type
+/// @brief  Prints IP, represented as std::tuple, where all arguments have the same type
 /// @tparam T - std::tuple
-/// @param  ip - IP address
+/// @param  value - IP address
 /// @author btv <example@example.com>
     template<typename... Args>
     std::enable_if_t<all_same<Args...>::value> print_ip(const std::tuple<Args...>& value) {
